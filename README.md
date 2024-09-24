@@ -1,2 +1,4 @@
 # lichess.ai
 Machine learning analysis of the popular and open-source Lichess database
+
+Datasets sourced from the [lichess.org Open Database](https://database.lichess.org/)
