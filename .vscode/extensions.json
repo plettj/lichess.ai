@@ -1,0 +1,14 @@
+{
+  "recommendations": [
+    "mechatroner.rainbow-csv",
+    "dbaeumer.vscode-eslint",
+    "dsznajder.es7-react-js-snippets",
+    "github.copilot",
+    "julialang.language-julia",
+    "esbenp.prettier-vscode",
+    "ms-python.vscode-pylance",
+    "ms-python.python",
+    "ms-python.debugpy",
+    "bradlc.vscode-tailwindcss"
+  ]
+}
