@@ -31,11 +31,11 @@ def parse_clock_time(clock_str):
         return None
 
 def main():
-    # pgn_file_path = '../data/chess960_rated_2024-08/lichess_db_chess960_rated_2024-08.pgn'
+    # pgn_file_path = '../data/lichess_db_chess960_rated_2024-08.pgn'
     # output_csv_path = '../data/output/parsed_output_1.csv'
 
-    pgn_file_path = '../data/chess960_rated_2024-08/much_shorter_mock_data.pgn'
-    output_csv_path = '../data/output/short_parsed_output_3.csv'
+    pgn_file_path = '../data/much_shorter_mock_data.pgn'
+    output_csv_path = '../data/output/short_parsed_output_5.csv'
 
     pgn = open(pgn_file_path)
 
@@ -75,8 +75,8 @@ def main():
             # Initialize move times
             white_times = []
             black_times = []
-            prev_white_clock = base_time
-            prev_black_clock = base_time
+            prev_clock = {'white': base_time, 'black': base_time}
+            move_number = {'white': 0, 'black': 0}
 
             node = game
 
@@ -84,27 +84,32 @@ def main():
                 next_node = node.variations[0]
                 move = next_node.move
                 comment = next_node.comment
+
                 clock_times = re.findall(r'\[%clk\s+([^\]]+)\]', comment)
                 if clock_times:
                     clock_time_str = clock_times[0]
                     clock_time = parse_clock_time(clock_time_str)
-                    if node.turn() == chess.WHITE:
-                        # Last move was by Black
-                        if clock_time is not None:
-                            time_taken = prev_black_clock - clock_time
-                            if time_taken < 0:
-                                time_taken = 0
-                            black_times.append(time_taken)
-                            prev_black_clock = clock_time
-                    else:
-                        # Last move was by White
-                        if clock_time is not None:
-                            time_taken = prev_white_clock - clock_time
-                            if time_taken < 0:
-                                time_taken = 0
+
+                    player = 'white' if node.board().turn == chess.WHITE else 'black'
+
+                    move_number[player] += 1
+
+                    if clock_time is not None:
+                        if move_number[player] == 1:
+                            time_taken = prev_clock[player] - clock_time
+                        else:
+                            time_taken = prev_clock[player] - clock_time + increment
+
+                        prev_clock[player] = clock_time
+                        if time_taken < 0:
+                            time_taken = 0
+                        if player == 'white':
                             white_times.append(time_taken)
-                            prev_white_clock = clock_time
+                        else:
+                            black_times.append(time_taken)
+
                 node = next_node
+
 
             # Write data to CSV
             data = {
