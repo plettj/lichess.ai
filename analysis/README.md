@@ -10,7 +10,9 @@ This section documents our process of getting the data classified and in a forma
 
 2. Use [PeaZip](https://peazip.github.io/peazip-64bit.html) on Windows (other platforms have other tools) to extract the `.pgn` from the `.zst` zipped file.
 
-3. Remove all non-blitz games: anything faster than 3|1 and slower than 5|5 ([explanation of time controls](https://support.chess.com/en/articles/8584509-how-do-time-controls-work-on-chess-com#:~:text=is%20Daily%20Chess%3F-,Understanding%20time%20controls,represented%20by%20two%20numbers)), and parse the data into a `.csv`.
+3. Preprocess the data into a nice `csv`. This includes remove all non-blitz games (anything faster than 3|0 and slower than 5|5 ([explanation of time controls](https://support.chess.com/en/articles/8584509-how-do-time-controls-work-on-chess-com#:~:text=is%20Daily%20Chess%3F-,Understanding%20time%20controls,represented%20by%20two%20numbers))), extract the exact time each person took on each move and create an array for it, the elo difference, the move length, and classify the beginning, middle, and endgames.
+
+END OF DATA PROCESSING FOR REPORT 1
 
 4. Classify additional attributes representing beginning, middle, and end game average move time as a _Continuous_, _Ratio_ attribute, normalized to be relative to the total time spent during the game.
 
