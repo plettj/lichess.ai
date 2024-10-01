@@ -73,11 +73,11 @@ def is_endgame(board):
     return False
 
 def main():
-    # pgn_file_path = '../data/lichess_db_chess960_rated_2024-08.pgn'
-    # output_csv_path = '../data/output/parsed_output_1.csv'
+    pgn_file_path = '../data/lichess_db_chess960_rated_2024-08.pgn'
+    output_csv_path = '../data/output/parsed_output.csv'
 
-    pgn_file_path = '../data/much_shorter_mock_data.pgn'
-    output_csv_path = '../data/output/short_parsed_output_7.csv'
+    # pgn_file_path = '../data/much_shorter_mock_data.pgn'
+    # output_csv_path = '../data/output/short_parsed_output_7.csv'
 
     pgn = open(pgn_file_path)
 
