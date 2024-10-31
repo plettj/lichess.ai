@@ -90,6 +90,9 @@ def do_processing(game):
     # Parse TimeControl
     base_time, increment = parse_time_control(time_control)
 
+    # Parse Result
+    result = 0 if result == '1/2-1/2' else 1 if result == '1-0' else -1
+
     # Filter out all non 3|2 games, based on TimeControl
     if base_time is None or increment is None:
         return
@@ -169,6 +172,12 @@ def do_processing(game):
 
         node = next_node
     
+    # If the middlegame was never reached, set it to the ply where the game ended
+    if middlegame_move == -1:
+        middlegame_move = total_move_counter
+        white_opening_time = time_used['white_opening'] / base_time
+        black_opening_time = time_used['black_opening'] / base_time
+
     # Calculate total moves
     total_moves = len(white_times) + len(black_times)
 
@@ -178,8 +187,8 @@ def do_processing(game):
     # Finalize endgame time and total clock time usage
     white_endgame_time = time_used['white_endgame'] / base_time if endgame_move > -1 else -1
     black_endgame_time = time_used['black_endgame'] / base_time if endgame_move > -1 else -1
-    white_total_time = (base_time - prev_clock['white']) / base_time if termination != "Time forfeit" or result != "0-1" else 1
-    black_total_time = (base_time - prev_clock['black']) / base_time if termination != "Time forfeit" or result != "1-0" else 1
+    white_total_time = (base_time - prev_clock['white']) / base_time if termination != "Time forfeit" or result != -1 else 1
+    black_total_time = (base_time - prev_clock['black']) / base_time if termination != "Time forfeit" or result != 1 else 1
 
     # Calculate elo difference
     try:
@@ -205,8 +214,8 @@ def do_processing(game):
         'TotalMoves': total_moves,
         'Middlegame': middlegame_move,
         'Endgame': endgame_move,
-        'WhiteOpeningTime': round(white_opening_time, significant_digits) if middlegame_move > -1 else -1,
-        'BlackOpeningTime': round(black_opening_time, significant_digits) if middlegame_move > -1 else -1,
+        'WhiteOpeningTime': round(white_opening_time, significant_digits),
+        'BlackOpeningTime': round(black_opening_time, significant_digits),
         'WhiteMiddlegameTime': round(white_middlegame_time, significant_digits) if endgame_move > -1 else -1,
         'BlackMiddlegameTime': round(black_middlegame_time, significant_digits) if endgame_move > -1 else -1,
         'WhiteEndgameTime': round(white_endgame_time, significant_digits) if endgame_move > -1 else -1,
@@ -219,10 +228,10 @@ def do_processing(game):
 
 def main():
     # pgn_file_path = '../data/lichess_db_chess960_rated_2024-08.pgn'
-    # output_csv_path = '../data/output/project_2_parsed_output_extended.csv'
+    # output_csv_path = '../data/output/project_2_parsed_output.csv'
 
     pgn_file_path = '../data/much_shorter_mock_data.pgn'
-    output_csv_path = '../data/output/short_parsed_output_12_extended.csv'
+    output_csv_path = '../data/output/short_parsed_output_13_extended.csv'
 
     pgn = open(pgn_file_path)
 
