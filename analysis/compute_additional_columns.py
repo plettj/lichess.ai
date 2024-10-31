@@ -4,8 +4,11 @@ import ast
 # Copyright Josiah Plett 2024
 
 def main():
-    input_csv_path = '../data/output/parsed_output.csv'
-    output_csv_path = '../data/output/parsed_output_2.csv'
+    # input_csv_path = '../data/output/parsed_output.csv'
+    # output_csv_path = '../data/output/parsed_output_2.csv'
+
+    input_csv_path = '../data/output/short_parsed_output_8.csv'
+    output_csv_path = '../data/output/short_parsed_output_8_extended_2.csv'
 
     with open(input_csv_path, 'r', newline='', encoding='utf-8') as infile, \
          open(output_csv_path, 'w', newline='', encoding='utf-8') as outfile:
@@ -32,7 +35,7 @@ def main():
             black_elo = row.get('BlackElo', '')
 
             try:
-                elo_difference = abs(int(white_elo) - int(black_elo))
+                elo_difference = int(white_elo) - int(black_elo)
             except ValueError:
                 elo_difference = ''  # Leave empty if parsing fails
 
@@ -59,11 +62,12 @@ def main():
             # Insert TotalMoves into row
             row['TotalMoves'] = total_moves
 
-            writer.writerow(row)
+            if total_moves > 8:
+                writer.writerow(row)
 
-            row_count += 1
-            if row_count % 1000 == 0:
-                print(f'Processed {row_count} rows.')
+                row_count += 1
+                if row_count % 1000 == 0:
+                    print(f'Processed {row_count} rows.')
 
     print('Processing completed.')
 

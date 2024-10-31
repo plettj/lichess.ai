@@ -74,12 +74,110 @@ def is_endgame(board):
         return True
     return False
 
-def main():
-    pgn_file_path = '../data/lichess_db_chess960_rated_2024-08.pgn'
-    output_csv_path = '../data/output/parsed_output.csv'
+def do_processing(game):
+    # Extract headers
+    headers = game.headers
+    result = headers.get('Result', '')
+    white = headers.get('White', '')
+    black = headers.get('Black', '')
+    white_elo = headers.get('WhiteElo', '')
+    black_elo = headers.get('BlackElo', '')
+    time_control = headers.get('TimeControl', '')
+    termination = headers.get('Termination', '')
+    fen = headers.get('FEN', '')
 
-    # pgn_file_path = '../data/much_shorter_mock_data.pgn'
-    # output_csv_path = '../data/output/short_parsed_output_7.csv'
+    # Parse TimeControl
+    base_time, increment = parse_time_control(time_control)
+
+    # Filter out all non 3|2 games, based on TimeControl
+    if base_time is None or increment is None:
+        return
+    if base_time != 180 or increment != 0:
+        return
+
+    # Initialize move times
+    white_times = []
+    black_times = []
+    prev_clock = {'white': base_time, 'black': base_time}
+    move_number = {'white': 0, 'black': 0}
+
+    # Initialize board and move counters for middlegame and endgame detection
+    board = game.board()
+    middlegame_move = -1
+    endgame_move = -1
+    total_move_counter = 0  # Counts half-moves (plies)
+
+    node = game
+
+    while node.variations:
+        next_node = node.variations[0]
+        move = next_node.move
+
+        # Update the board with the move
+        board.push(move)
+        total_move_counter += 1  # Increment move counter
+
+        # Check for middlegame start
+        if middlegame_move == -1:
+            is_midgame = is_middlegame(board)
+            if is_midgame:
+                middlegame_move = total_move_counter
+
+        # Check for endgame start
+        if endgame_move == -1 and is_endgame(board):
+            endgame_move = total_move_counter
+
+        comment = next_node.comment
+
+        clock_times = re.findall(r'\[%clk\s+([^\]]+)\]', comment)
+        if clock_times:
+            clock_time_str = clock_times[0]
+            clock_time = parse_clock_time(clock_time_str)
+
+            player = 'white' if node.board().turn == chess.WHITE else 'black'
+
+            move_number[player] += 1
+
+            if clock_time is not None:
+                if move_number[player] == 1:
+                    time_taken = prev_clock[player] - clock_time
+                else:
+                    time_taken = prev_clock[player] - clock_time + increment
+
+                prev_clock[player] = clock_time
+                if time_taken < 0:
+                    time_taken = 0
+                if player == 'white':
+                    white_times.append(time_taken)
+                else:
+                    black_times.append(time_taken)
+
+        node = next_node
+
+    # Data for writing to CSV
+    data = {
+        'White': white,
+        'Black': black,
+        'Result': result,
+        'WhiteElo': white_elo,
+        'BlackElo': black_elo,
+        'TimeControl': time_control,
+        'Termination': termination,
+        'FEN': fen,
+        'WhiteTimes': white_times,
+        'BlackTimes': black_times,
+        'Middlegame': middlegame_move,
+        'Endgame': endgame_move,
+    }
+
+    return data
+
+def main():
+    # pgn_file_path = '../data/lichess_db_chess960_rated_2024-08.pgn'
+    # output_csv_path = '../data/output/parsed_output.csv'
+
+    pgn_file_path = '../data/much_shorter_mock_data.pgn'
+    output_csv_path = '../data/output/short_parsed_output_8.csv'
 
     pgn = open(pgn_file_path)
 
@@ -92,115 +190,22 @@ def main():
         writer.writeheader()
 
         game_count = 0
+
         while True:
             game = chess.pgn.read_game(pgn)
             if game is None:
                 break  # End of file
 
-            # Extract headers
-            headers = game.headers
-            result = headers.get('Result', '')
-            white = headers.get('White', '')
-            black = headers.get('Black', '')
-            white_elo = headers.get('WhiteElo', '')
-            black_elo = headers.get('BlackElo', '')
-            time_control = headers.get('TimeControl', '')
-            termination = headers.get('Termination', '')
-            fen = headers.get('FEN', '')
+            data = do_processing(game)
 
-            # Parse TimeControl
-            base_time, increment = parse_time_control(time_control)
+            if data is not None:
+              writer.writerow(data)
+              game_count += 1
 
-            # Filter games based on TimeControl
-            if base_time is None or increment is None:
-                continue
-            if base_time < 180 or base_time > 300:
-                continue
-            if base_time == 300 and increment > 5:
-                continue
+              if game_count % 100 == 0:
+                  print(f'Processed {game_count} games.')
 
-            # Initialize move times
-            white_times = []
-            black_times = []
-            prev_clock = {'white': base_time, 'black': base_time}
-            move_number = {'white': 0, 'black': 0}
-
-            # Initialize board and move counters for middlegame and endgame detection
-            board = game.board()
-            middlegame_move = -1
-            endgame_move = -1
-            total_move_counter = 0  # Counts half-moves (plies)
-
-            node = game
-
-            while node.variations:
-                next_node = node.variations[0]
-                move = next_node.move
-
-                # Update the board with the move
-                board.push(move)
-                total_move_counter += 1  # Increment move counter
-
-                # Check for middlegame start
-                if middlegame_move == -1:
-                    is_midgame = is_middlegame(board)
-                    if is_midgame:
-                        middlegame_move = total_move_counter
-
-                # Check for endgame start
-                if endgame_move == -1 and is_endgame(board):
-                    endgame_move = total_move_counter
-
-                comment = next_node.comment
-
-                clock_times = re.findall(r'\[%clk\s+([^\]]+)\]', comment)
-                if clock_times:
-                    clock_time_str = clock_times[0]
-                    clock_time = parse_clock_time(clock_time_str)
-
-                    player = 'white' if node.board().turn == chess.WHITE else 'black'
-
-                    move_number[player] += 1
-
-                    if clock_time is not None:
-                        if move_number[player] == 1:
-                            time_taken = prev_clock[player] - clock_time
-                        else:
-                            time_taken = prev_clock[player] - clock_time + increment
-
-                        prev_clock[player] = clock_time
-                        if time_taken < 0:
-                            time_taken = 0
-                        if player == 'white':
-                            white_times.append(time_taken)
-                        else:
-                            black_times.append(time_taken)
-
-                node = next_node
-
-            # Write data to CSV
-            data = {
-                'White': white,
-                'Black': black,
-                'Result': result,
-                'WhiteElo': white_elo,
-                'BlackElo': black_elo,
-                'TimeControl': time_control,
-                'Termination': termination,
-                'FEN': fen,
-                'WhiteTimes': white_times,
-                'BlackTimes': black_times,
-                'Middlegame': middlegame_move,
-                'Endgame': endgame_move,
-            }
-            writer.writerow(data)
-            game_count += 1
-
-            # Uncomment the following line if you want to see the progress
-            # print(f'Processed game {game_count} with TimeControl {time_control}.')
-
-            if game_count % 100 == 0:
-                print(f'Processed {game_count} games.')
+        print(f'Processed {game_count} games.')
 
     pgn.close()
 
