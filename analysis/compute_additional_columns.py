@@ -4,8 +4,8 @@ import ast
 # Copyright Josiah Plett 2024
 
 def main():
-    # input_csv_path = '../data/output/parsed_output.csv'
-    # output_csv_path = '../data/output/parsed_output_2.csv'
+    # input_csv_path = '../data/output/project_2_parsed_output.csv'
+    # output_csv_path = '../data/output/project_2_parsed_output_extended.csv'
 
     input_csv_path = '../data/output/short_parsed_output_8.csv'
     output_csv_path = '../data/output/short_parsed_output_8_extended_2.csv'
