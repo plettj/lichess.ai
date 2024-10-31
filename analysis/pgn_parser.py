@@ -1,6 +1,7 @@
 import chess.pgn
 import csv
 import re
+import ast
 
 # Copyright Josiah Plett 2024
 
@@ -107,6 +108,13 @@ def do_processing(game):
     endgame_move = -1
     total_move_counter = 0  # Counts half-moves (plies)
 
+    # Initialize time usage columns
+    white_opening_time = black_opening_time = white_middlegame_time = black_middlegame_time = -1
+    white_endgame_time = black_endgame_time = white_total_time = black_total_time = -1
+
+    # Track time used in each phase
+    time_used = {'white_opening': 0, 'black_opening': 0, 'white_middlegame': 0, 'black_middlegame': 0, 'white_endgame': 0, 'black_endgame': 0}
+
     node = game
 
     while node.variations:
@@ -117,42 +125,69 @@ def do_processing(game):
         board.push(move)
         total_move_counter += 1  # Increment move counter
 
-        # Check for middlegame start
-        if middlegame_move == -1:
-            is_midgame = is_middlegame(board)
-            if is_midgame:
-                middlegame_move = total_move_counter
-
-        # Check for endgame start
-        if endgame_move == -1 and is_endgame(board):
-            endgame_move = total_move_counter
-
         comment = next_node.comment
-
         clock_times = re.findall(r'\[%clk\s+([^\]]+)\]', comment)
+
         if clock_times:
             clock_time_str = clock_times[0]
             clock_time = parse_clock_time(clock_time_str)
 
             player = 'white' if node.board().turn == chess.WHITE else 'black'
-
             move_number[player] += 1
 
             if clock_time is not None:
-                if move_number[player] == 1:
-                    time_taken = prev_clock[player] - clock_time
-                else:
-                    time_taken = prev_clock[player] - clock_time + increment
-
+                time_taken = prev_clock[player] - clock_time
                 prev_clock[player] = clock_time
-                if time_taken < 0:
-                    time_taken = 0
+
+                # Accumulate time based on the game phase
                 if player == 'white':
                     white_times.append(time_taken)
                 else:
                     black_times.append(time_taken)
+                
+                if middlegame_move == -1:
+                    time_used[f'{player}_opening'] += time_taken
+                elif endgame_move == -1:
+                    time_used[f'{player}_middlegame'] += time_taken
+                else:
+                    time_used[f'{player}_endgame'] += time_taken
+        else:
+            # No clock time found, skip this whole game
+            return
+
+        # Check for middlegame start
+        if middlegame_move == -1 and is_middlegame(board):
+            middlegame_move = total_move_counter
+            white_opening_time = time_used['white_opening'] / base_time
+            black_opening_time = time_used['black_opening'] / base_time
+
+        # Check for endgame start
+        if endgame_move == -1 and is_endgame(board):
+            endgame_move = total_move_counter
+            white_middlegame_time = time_used['white_middlegame'] / base_time
+            black_middlegame_time = time_used['black_middlegame'] / base_time
 
         node = next_node
+    
+    # Calculate total moves
+    total_moves = len(white_times) + len(black_times)
+
+    if total_moves <= 8:
+        return  # Filter out games with fewer than 9 moves
+
+    # Finalize endgame time and total clock time usage
+    white_endgame_time = time_used['white_endgame'] / base_time if endgame_move > -1 else -1
+    black_endgame_time = time_used['black_endgame'] / base_time if endgame_move > -1 else -1
+    white_total_time = (base_time - prev_clock['white']) / base_time if termination != "Time forfeit" or result != "0-1" else 1
+    black_total_time = (base_time - prev_clock['black']) / base_time if termination != "Time forfeit" or result != "1-0" else 1
+
+    # Calculate elo difference
+    try:
+        elo_difference = int(white_elo) - int(black_elo)
+    except ValueError:
+        elo_difference = ''
+
+    significant_digits = 4
 
     # Data for writing to CSV
     data = {
@@ -161,30 +196,42 @@ def do_processing(game):
         'Result': result,
         'WhiteElo': white_elo,
         'BlackElo': black_elo,
+        'EloDifference': elo_difference,
         'TimeControl': time_control,
         'Termination': termination,
         'FEN': fen,
         'WhiteTimes': white_times,
         'BlackTimes': black_times,
+        'TotalMoves': total_moves,
         'Middlegame': middlegame_move,
         'Endgame': endgame_move,
+        'WhiteOpeningTime': round(white_opening_time, significant_digits) if middlegame_move > -1 else -1,
+        'BlackOpeningTime': round(black_opening_time, significant_digits) if middlegame_move > -1 else -1,
+        'WhiteMiddlegameTime': round(white_middlegame_time, significant_digits) if endgame_move > -1 else -1,
+        'BlackMiddlegameTime': round(black_middlegame_time, significant_digits) if endgame_move > -1 else -1,
+        'WhiteEndgameTime': round(white_endgame_time, significant_digits) if endgame_move > -1 else -1,
+        'BlackEndgameTime': round(black_endgame_time, significant_digits) if endgame_move > -1 else -1,
+        'WhiteTotalTime': round(white_total_time, significant_digits),
+        'BlackTotalTime': round(black_total_time, significant_digits),
     }
 
     return data
 
 def main():
     # pgn_file_path = '../data/lichess_db_chess960_rated_2024-08.pgn'
-    # output_csv_path = '../data/output/project_2_parsed_output.csv'
+    # output_csv_path = '../data/output/project_2_parsed_output_extended.csv'
 
     pgn_file_path = '../data/much_shorter_mock_data.pgn'
-    output_csv_path = '../data/output/short_parsed_output_8.csv'
+    output_csv_path = '../data/output/short_parsed_output_12_extended.csv'
 
     pgn = open(pgn_file_path)
 
-    with open(output_csv_path, 'w', newline='') as csvfile:
+    with open(output_csv_path, 'w', newline='', encoding='utf-8') as csvfile:
         fieldnames = [
-            'Result', 'White', 'Black', 'WhiteElo', 'BlackElo', 'TimeControl',
-            'Termination', 'FEN', 'WhiteTimes', 'BlackTimes', 'Middlegame', 'Endgame'
+            'Result', 'White', 'Black', 'WhiteElo', 'BlackElo', 'EloDifference', 'TimeControl',
+            'Termination', 'FEN', 'WhiteTimes', 'BlackTimes', 'TotalMoves', 'Middlegame', 'Endgame',
+            'WhiteOpeningTime', 'BlackOpeningTime', 'WhiteMiddlegameTime', 'BlackMiddlegameTime',
+            'WhiteEndgameTime', 'BlackEndgameTime', 'WhiteTotalTime', 'BlackTotalTime'
         ]
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
         writer.writeheader()
@@ -199,13 +246,13 @@ def main():
             data = do_processing(game)
 
             if data is not None:
-              writer.writerow(data)
-              game_count += 1
+                writer.writerow(data)
+                game_count += 1
 
-              if game_count % 100 == 0:
-                  print(f'Processed {game_count} games.')
+                if game_count % 1000 == 0:
+                    print(f'Processed {game_count} games.')
 
-        print(f'Processed {game_count} games.')
+        print(f'Processed {game_count} games in total.')
 
     pgn.close()
 
