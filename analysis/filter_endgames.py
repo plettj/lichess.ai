@@ -33,6 +33,11 @@ def filter_endgame_games(input_csv, output_csv):
         
         reader = csv.DictReader(infile)
         fieldnames = reader.fieldnames
+
+        if fieldnames is None:
+            print("No data to process.")
+            return
+        
         writer = csv.DictWriter(outfile, fieldnames=fieldnames)
         writer.writeheader()
         
@@ -44,13 +49,15 @@ def filter_endgame_games(input_csv, output_csv):
                 continue
 
 def main():
+    input("This file will attempt to process the data in `output/project_2_parsed_output.csv`. Press Enter to continue...")
+
     input_csv = '../data/output/project_2_parsed_output.csv'
     output_csv_all_games = '../data/output/project_2_all_games.csv'
     process_all_games(input_csv, output_csv_all_games)
     
     input("Processing complete. Press Enter to continue...")
     
-    output_csv_endgame_games = '../data/output/project_2_all_games.csv'
+    output_csv_endgame_games = '../data/output/project_2_endgame_games.csv'
     filter_endgame_games(output_csv_all_games, output_csv_endgame_games)
 
 if __name__ == '__main__':
