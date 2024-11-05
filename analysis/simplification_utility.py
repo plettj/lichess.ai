@@ -63,7 +63,7 @@ def main():
 
     # Define the attributes you want to keep!
     # Preferably, put the attribute you're predicting at the start.
-    columns_to_keep = ['TotalMoves', 'EloDifference', 'Middlegame', 'WhiteOpeningTime', 'BlackOpeningTime', 'WhiteTotalTime', 'BlackTotalTime', 'Termination']
+    columns_to_keep = ['TotalPlies', 'EloDifference', 'Middlegame', 'WhiteOpeningTime', 'BlackOpeningTime', 'WhiteTotalTime', 'BlackTotalTime', 'Termination']
 
     simplify_csv(input_csv, columns_to_keep)
 
