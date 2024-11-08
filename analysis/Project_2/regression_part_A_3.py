@@ -1,36 +1,17 @@
 """
-REGRESSION - PART A - PART 2
+REGRESSION - PART A - PART 3
 
 QUESTION:
 
-Introduce a regularization parameter λ as discussed in chapter 14 of the lecture
-notes, and estimate the generalization error for different values of λ. Specifi-
-cally, choose a reasonable range of values of λ (ideally one where the general-
-ization error first drop and then increases), and for each value use K = 10 fold
-cross-validation (algorithm 5) to estimate the generalization error.
-Include a figure of the estimated generalization error as a function of λ in the
-report and briefly discuss the result.
+Explain how the output, y, of the linear model with the lowest generalization
+error (as determined in the previous question) is computed for a given input
+x. What is the effect of an individual attribute in x on the output, y, of the
+linear model? Does the effect of individual attributes make sense based on your
+understanding of the problem?
 
 ANSWER:
 
-We experimented with different ranges of regularization parameter λ being applied
-to our basic Linear Regression model and assessed them via 10-fold cross-
-validation, until we found the global minima and its corresponding λ. The first
-graph is the result when using our full 45,343-game standardized data set, and
-the second is when using a random 500-game subset.
-
-It's immediately apparent that the change in Mean Squared Error is miniscule at
-these global minima. In fact, across the range -10^(-6) < λ < 10^(2) on both
-datasets, the Mean Squared Error never deviates by more than 0.005.
-
-Due to our highly variable yet undoubtedly correlated game data, it makes sense
-that regularization doesn't have a big effect. Linear regression relies on plain
-old probabilities more than other models, so given how linear in nature our data
-is, "punishing overfitting" isn't really very punishing.
-
-Put simply, linear regression is so good at its job on our data that regulariza-
-tion can barely help.
-
+TBD
 """
 
 import numpy as np
@@ -98,22 +79,33 @@ def plot_errors(lambdas, cv_errors):
     plt.show()
 
 
+def print_model_coefficients(X, y, optimal_lambda):
+    """
+    Train and print coefficients for:
+    1. Plain linear regression (lambda = 0).
+    2. Ridge regression with the optimal lambda.
+    """
+    # Plain linear regression (lambda = 0)
+    plain_model = Ridge(alpha=0)  # This behaves like a standard linear regression
+    plain_model.fit(X, y)
+    print("\nCoefficients of plain linear regression (lambda = 0):")
+    for feature, coef in zip(X.columns, plain_model.coef_):
+        print(f"{feature}: {coef}")
+
+    # Ridge regression with optimal lambda
+    ridge_model = Ridge(alpha=optimal_lambda)
+    ridge_model.fit(X, y)
+    print(f"\nCoefficients of ridge regression with optimal lambda ({optimal_lambda}):")
+    for feature, coef in zip(X.columns, ridge_model.coef_):
+        print(f"{feature}: {coef}")
+
+
 def main():
     input_csv = "../../data/output/project_2_part_a_standardized.csv"
 
     X, y = load_data(input_csv)
 
-    # Attempt 1: 10^-4 to 10^4, 16 instances
-    # 251.2
-    # Attempt 2: 10^-6 to 10^6, 80 instances
-    # 455.2
-    # Attempt 3: 10^1.5 to 10^3.5, 80 instances
-    # 519.0
-    # TRANSITION TO LINEAR SCALE
-    # Attempt 4: 250 to 750, 50 instances
-    # 525.5
-    # Attempt 5: 50 to 1000, 100 instances
-    # 520.0
+    # Define a range of lambdas to search for optimal value
     lambdas = np.linspace(50, 1000, 100)
 
     # Evaluate Ridge Regression for different lambdas
@@ -125,6 +117,9 @@ def main():
     # Output the optimal lambda value
     optimal_lambda = lambdas[np.argmin(cv_errors)]
     print(f"The optimal lambda value is: {optimal_lambda}")
+
+    # Print coefficients of the plain linear model and the best-performing ridge model
+    print_model_coefficients(X, y, optimal_lambda)
 
 
 if __name__ == "__main__":
