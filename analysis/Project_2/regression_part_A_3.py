@@ -26,7 +26,8 @@ import matplotlib.pyplot as plt
 def load_data(csv_file):
     data = pd.read_csv(csv_file)
 
-    data = data[
+    # Full model with all parameters
+    full_data = data[
         [
             "TotalPlies",
             "EloDifference",
@@ -38,11 +39,16 @@ def load_data(csv_file):
         ]
     ]
 
-    # Separate features and target variable
-    X = data.drop("TotalPlies", axis=1)
-    y = data["TotalPlies"]
+    X_reduced = data[
+        [
+            "WhiteTotalTime",
+            "BlackTotalTime",
+        ]
+    ]
+    X_full = full_data.drop("TotalPlies", axis=1)
+    y = full_data["TotalPlies"]
 
-    return X, y
+    return X_full, X_reduced, y
 
 
 def evaluate_ridge_regression(X, y, lambdas, K=10):
@@ -65,16 +71,29 @@ def evaluate_ridge_regression(X, y, lambdas, K=10):
     return cv_errors
 
 
-def plot_errors(lambdas, cv_errors):
+def plot_errors(lambdas, cv_errors_full, cv_errors_reduced):
     """
-    Plot the estimated generalization error as a function of lambda.
+    Plot the estimated generalization error as a function of lambda for both models.
     """
     plt.figure(figsize=(8, 6))
-    plt.plot(lambdas, cv_errors, marker="o")
+    plt.plot(
+        lambdas,
+        cv_errors_full,
+        marker="o",
+        label="Full Model (All Parameters)",
+    )
+    plt.plot(
+        lambdas,
+        cv_errors_reduced,
+        marker="o",
+        label="Reduced Model (WhiteTotalTime, BlackTotalTime)",
+        color="red",
+    )
     plt.xscale("log")
     plt.xlabel("Lambda (Regularization Parameter)")
     plt.ylabel("Mean Squared Error")
     plt.title("Generalization Error vs Lambda")
+    plt.legend()
     plt.grid(True)
     plt.show()
 
@@ -103,23 +122,35 @@ def print_model_coefficients(X, y, optimal_lambda):
 def main():
     input_csv = "../../data/output/project_2_part_a_standardized.csv"
 
-    X, y = load_data(input_csv)
+    X_full, X_reduced, y = load_data(input_csv)
 
     # Define a range of lambdas to search for optimal value
-    lambdas = np.linspace(50, 1000, 100)
+    lambdas = np.logspace(-1, 4, 100)
 
-    # Evaluate Ridge Regression for different lambdas
-    cv_errors = evaluate_ridge_regression(X, y, lambdas)
+    # Evaluate Ridge Regression for different lambdas for both models
+    cv_errors_full = evaluate_ridge_regression(X_full, y, lambdas)
+    cv_errors_reduced = evaluate_ridge_regression(X_reduced, y, lambdas)
 
-    # Plot the generalization error as a function of lambda
-    plot_errors(lambdas, cv_errors)
+    # Plot the generalization error as a function of lambda for both models
+    plot_errors(lambdas, cv_errors_full, cv_errors_reduced)
 
-    # Output the optimal lambda value
-    optimal_lambda = lambdas[np.argmin(cv_errors)]
-    print(f"The optimal lambda value is: {optimal_lambda}")
+    # Output the optimal lambda value for the full model
+    optimal_lambda_full = lambdas[np.argmin(cv_errors_full)]
+    print(f"The optimal lambda value for the full model is: {optimal_lambda_full}")
 
-    # Print coefficients of the plain linear model and the best-performing ridge model
-    print_model_coefficients(X, y, optimal_lambda)
+    # Output the optimal lambda value for the reduced model
+    optimal_lambda_reduced = lambdas[np.argmin(cv_errors_reduced)]
+    print(
+        f"The optimal lambda value for the reduced model is: {optimal_lambda_reduced}"
+    )
+
+    # Print coefficients of the plain linear model and the best-performing ridge model for the full model
+    print("\nFull Model Coefficients:")
+    print_model_coefficients(X_full, y, optimal_lambda_full)
+
+    # Print coefficients of the plain linear model and the best-performing ridge model for the reduced model
+    print("\nReduced Model Coefficients:")
+    print_model_coefficients(X_reduced, y, optimal_lambda_reduced)
 
 
 if __name__ == "__main__":
