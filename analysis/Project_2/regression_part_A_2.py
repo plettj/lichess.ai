@@ -70,6 +70,7 @@ def evaluate_ridge_regression(X, y, lambdas, K=10):
     Returns the mean cross-validation error for each lambda.
     """
     cv_errors = []
+    # Set random state to an arbitrary number so we can reproduce results + decrease variance.
     kf = KFold(n_splits=K, shuffle=True, random_state=42)
 
     for lam in lambdas:
