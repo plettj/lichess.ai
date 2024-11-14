@@ -1,14 +1,15 @@
 import { Button } from "@/components/ui/button";
+import { GitHubLogoIcon } from "@radix-ui/react-icons";
 import Link from "next/link";
 
 export default async function Home() {
   return (
     <main className="flex flex-col gap-6 my-auto items-center">
-      <h1>Lichess.ai</h1>
+      <h1 className="font-bold">Lichess.ai</h1>
       <p>
         A{" "}
         <a
-          className="no-underline text-blue-900 hover:to-blue-700"
+          className="no-underline text-blue-900 hover:to-blue-700 hover:underline"
           href="https://database.lichess.org/#standard_games"
         >
           lichess database
@@ -18,21 +19,21 @@ export default async function Home() {
       <p>
         Built by{" "}
         <a
-          className="no-underline text-blue-900 hover:to-blue-700"
+          className="no-underline text-blue-900 hover:to-blue-700 hover:underline"
           href="https://plett.dev"
         >
           Josiah
         </a>
         ,{" "}
         <a
-          className="no-underline text-blue-900 hover:to-blue-700"
+          className="no-underline text-blue-900 hover:to-blue-700 hover:underline"
           href="https://tdude92.github.io/"
         >
           Trevor
         </a>
         , and{" "}
         <a
-          className="no-underline text-blue-900 hover:to-blue-700"
+          className="no-underline text-blue-900 hover:to-blue-700 hover:underline"
           href="https://www.linkedin.com/in/tonglei-liu-18291a248/"
         >
           Tonglei
@@ -40,11 +41,16 @@ export default async function Home() {
         .
       </p>
       <Button asChild>
+        <Link href="https://github.com/plettj/lichess.ai?tab=readme-ov-file">
+          <GitHubLogoIcon className="mr-2" /> Code
+        </Link>
+      </Button>
+      <Button asChild variant="outline">
         <Link href="/static/reports/feature-extraction-and-visualization.pdf">
           Report 1 - Feature Extraction and Visualization
         </Link>
       </Button>
-      <Button asChild>
+      <Button asChild variant="outline">
         <Link href="/static/reports/supervised-learning-classification-and-regression.pdf">
           Report 2 - Supervised Learning, Classification, and Regression
         </Link>

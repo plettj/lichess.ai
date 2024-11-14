@@ -17,6 +17,8 @@ This section documents our process of getting the data classified and in a forma
 <details>
 <summary><b>A table showing every attribute of our analyzed data.</b></summary>
 
+<br>
+
 | **Attribute**         | **Data Type / Values**       | **Description**                                                        |
 | --------------------- | ---------------------------- | ---------------------------------------------------------------------- |
 | `Result`              | `{1, 0, -1}`                 | 1 = White win, 0 = Draw, -1 = Black win                                |

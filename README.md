@@ -7,6 +7,8 @@ Hosted publicly on [lichess.ai](https://lichess.ai/), this repo contains signifi
 <details>
 <summary>A table showing every attribute of our analyzed data.</summary>
 
+<br>
+
 Note that `EloDifference` and every attribute after `FEN` was computed by us.
 
 | **Attribute**         | **Data Type / Values**       | **Description**                                                        |

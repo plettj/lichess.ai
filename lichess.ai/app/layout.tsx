@@ -1,11 +1,10 @@
 import TopLoader from "@/components/layouts/TopLoader";
 import { BASE_URL } from "@/lib/constants";
 import { type Metadata } from "next";
-import { Silkscreen } from "next/font/google";
+import { JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 
-const fontSans = Silkscreen({
-  weight: ["400", "700"],
+const fontSans = JetBrains_Mono({
   subsets: ["latin"],
   variable: "--font-sans",
 });
