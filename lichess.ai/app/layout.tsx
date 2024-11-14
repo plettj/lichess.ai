@@ -12,15 +12,16 @@ const fontSans = JetBrains_Mono({
 // OPG compliant metadata (https://ogp.me/)
 export const metadata: Metadata = {
   title: "Lichess.ai",
-  description: "ML and AI Data Analysis on the Lichess Public Database",
+  description:
+    "A machine learning analysis of the lichess.org public database. Built by Josiah Plett, Trevor Du, and Tonglei Liu.",
   openGraph: {
     type: "website",
     locale: "en_US",
     url: BASE_URL,
-    siteName: "Lichess.ai",
-    title: "The most comprehensive Lichess Database analysis site",
+    siteName: "lichess.ai",
+    title: "A machine learning analysis of the lichess.org public database.",
     description:
-      "Lichess.ai contains everything from machine learning analysis on the elo system, to AI models predicting the most human moves.",
+      "Josiah Plett, Trevor Du, and Tonglei Liu present unique insights into modern blitz chess statistics.",
     images: [
       {
         url: `${BASE_URL}/static/assets/preview.png`,
