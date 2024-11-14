@@ -41,7 +41,7 @@ export default async function Home() {
         .
       </p>
       <Button asChild>
-        <Link href="https://github.com/plettj/lichess.ai?tab=readme-ov-file">
+        <Link href="https://github.com/plettj/lichess.ai">
           <GitHubLogoIcon className="mr-2" /> Code
         </Link>
       </Button>
