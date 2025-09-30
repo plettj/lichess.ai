@@ -40,11 +40,27 @@ export default async function Home() {
         </a>
         .
       </p>
-      <Button asChild>
-        <Link href="https://github.com/plettj/lichess.ai">
-          <GitHubLogoIcon className="mr-2" /> Code
-        </Link>
-      </Button>
+      <blockquote className="my-6 border-l-2 pl-6 italic max-w-[80ch]">
+        Unexpectedly, <strong>larger</strong> the elo difference between
+        players, the <strong>more</strong> total moves were played, causing the
+        lower rated player to mismanage their clock and lose on time.
+      </blockquote>
+      <section className="flex gap-6">
+        <Button asChild>
+          <Link href="https://github.com/plettj/lichess.ai">
+            <GitHubLogoIcon className="mr-2" /> Code
+          </Link>
+        </Button>
+        <Button asChild variant="outline">
+          <a
+            target="_blank"
+            href="https://kurser.dtu.dk/course/02450"
+            rel="noopener noreferrer"
+          >
+            DTU Course Link
+          </a>
+        </Button>
+      </section>
       <Button asChild variant="outline">
         <Link href="/static/reports/feature-extraction-and-visualization.pdf">
           Report 1 - Feature Extraction and Visualization
@@ -54,15 +70,6 @@ export default async function Home() {
         <Link href="/static/reports/supervised-learning-classification-and-regression.pdf">
           Report 2 - Supervised Learning, Classification, and Regression
         </Link>
-      </Button>
-      <Button asChild variant="outline">
-        <a
-          target="_blank"
-          href="https://kurser.dtu.dk/course/02450"
-          rel="noopener noreferrer"
-        >
-          Course Link
-        </a>
       </Button>
     </main>
   );
